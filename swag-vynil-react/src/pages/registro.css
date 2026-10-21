@@ -1,0 +1,47 @@
+header {
+    background-color: #687acc;
+    text-align: center;
+    padding: 25px 10px;
+}
+
+.form-card {
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px 20px;
+}
+
+.footer-default {
+    background-color: #2f3b66;
+    color: #e8e8e8;
+    padding: 10px 10px 10px;
+    margin-top: 40px;
+}
+
+.footer-default h5 {
+    color: #ffffff;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.footer-default a {
+    color: #cfd6ec;
+    text-decoration: none;
+}
+
+.footer-default a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.footer-default hr {
+    border-color: #4a5687;
+}
+
+.invalid-feedback {
+    display: block;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
