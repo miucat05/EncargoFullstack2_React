@@ -4,6 +4,8 @@ import Footer from './components/Footer'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
+import AdminHome from './admin/AdminHome'
+import AdminProductos from './admin/AdminProductos'
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/admin" element={<AdminHome />} />
+        <Route path="/admin/productos" element={<AdminProductos />} />
       </Routes>
       <Footer />
     </BrowserRouter>
