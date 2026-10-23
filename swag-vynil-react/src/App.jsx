@@ -8,6 +8,7 @@ import AdminLayout from './admin/AdminLayout'
 import AdminHome from './admin/AdminHome'
 import AdminProductos from './admin/AdminProductos'
 import AdminUsuarios from './admin/AdminUsuarios'
+import AdminUsuarioNuevo from './admin/AdminUsuarioNuevo'
 
 function LayoutTienda() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route index element={<AdminHome />} />
           <Route path='productos' element={<AdminProductos />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="usuarios/nuevo" element={<AdminUsuarioNuevo />} />
         </Route>
       </Routes>
     </BrowserRouter>
