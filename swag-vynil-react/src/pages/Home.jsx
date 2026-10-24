@@ -1,7 +1,8 @@
-import productos from '../data/productos';
 import ProductCard from '../components/ProductCard';
+import { obtenerProductos } from '../data/productosService';
 
 function Home() {
+  const productos = obtenerProductos();
   return (
     <main className="container py-4">
       <section className="hero-section">
