@@ -10,6 +10,8 @@ import AdminProductos from './admin/AdminProductos'
 import AdminUsuarios from './admin/AdminUsuarios'
 import AdminUsuarioNuevo from './admin/AdminUsuarioNuevo'
 import AdminUsuarioEditar from './admin/AdminUsuarioEditar'
+import AdminPerfil from './admin/AdminPerfil'
+
 function LayoutTienda() {
   return (
     <>
@@ -36,6 +38,7 @@ function App() {
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="usuarios/nuevo" element={<AdminUsuarioNuevo />} />
           <Route path="usuarios/:run/editar" element={<AdminUsuarioEditar />} />
+          <Route path="perfil" element={<AdminPerfil />} />
         </Route>
       </Routes>
     </BrowserRouter>
