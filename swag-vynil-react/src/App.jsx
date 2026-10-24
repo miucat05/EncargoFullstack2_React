@@ -17,6 +17,8 @@ import AdminCategoriaForm from './admin/AdminCategoriaForm'
 import Categorias from './pages/Categorias'
 import CategoriaDetalle from './pages/CategoriaDetalle'
 import Ofertas from './pages/Ofertas'
+import AdminOrdenes from './admin/AdminOrdenes'
+import AdminBoleta from './admin/AdminBoleta'
 
 function LayoutTienda() {
   return (
@@ -43,6 +45,8 @@ function App() {
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
+          <Route path="ordenes" element={<AdminOrdenes />} />
+          <Route path="ordenes/:id/boleta" element={<AdminBoleta />} />
           <Route path="productos" element={<AdminProductos />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="usuarios/nuevo" element={<AdminUsuarioNuevo />} />
