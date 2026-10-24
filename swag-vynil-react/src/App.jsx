@@ -11,6 +11,7 @@ import AdminUsuarios from './admin/AdminUsuarios'
 import AdminUsuarioNuevo from './admin/AdminUsuarioNuevo'
 import AdminUsuarioEditar from './admin/AdminUsuarioEditar'
 import AdminPerfil from './admin/AdminPerfil'
+import Categorias from './pages/Categorias'
 
 function LayoutTienda() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path='/' element={<Home />}/>
           <Route path='/login' element={<Login />}/>
           <Route path='/registro' element={<Registro />}/>
+          <Route path="/categorias" element={<Categorias />} />
         </Route>
 
         <Route path='/admin' element={<AdminLayout />}>
