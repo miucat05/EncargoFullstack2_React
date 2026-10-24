@@ -28,6 +28,10 @@ export function buscarUsuarioPorCorreo(correo) {
   return cargar().find((u) => u.correo.toLowerCase() === buscado)
 }
 
+export function buscarUsuarioPorRun(run) {
+  return cargar().find((u) => u.run === run)
+}
+
 export function crearUsuario(usuario) {
   const lista = cargar()
   lista.push(usuario)

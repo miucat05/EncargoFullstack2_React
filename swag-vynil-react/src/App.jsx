@@ -9,7 +9,7 @@ import AdminHome from './admin/AdminHome'
 import AdminProductos from './admin/AdminProductos'
 import AdminUsuarios from './admin/AdminUsuarios'
 import AdminUsuarioNuevo from './admin/AdminUsuarioNuevo'
-
+import AdminUsuarioEditar from './admin/AdminUsuarioEditar'
 function LayoutTienda() {
   return (
     <>
@@ -35,6 +35,7 @@ function App() {
           <Route path='productos' element={<AdminProductos />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="usuarios/nuevo" element={<AdminUsuarioNuevo />} />
+          <Route path="usuarios/:run/editar" element={<AdminUsuarioEditar />} />
         </Route>
       </Routes>
     </BrowserRouter>

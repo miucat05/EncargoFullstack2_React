@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { obtenerUsuarios } from "../data/usuariosService";
+import { obtenerUsuarios, eliminarUsuario, obtenerSesion } from "../data/usuariosService";
 
 export default function AdminUsuarios() {
-    const [usuarios] = useState(() => obtenerUsuarios())
+    const [usuarios, setUsuarios] = useState(() => obtenerUsuarios())
+    const sesion = obtenerSesion()
+
+    const eliminar = (usuario) => {
+        if (!window.confirm(`¿Eliminar a ${usuario.nombre} ${usuario.apellidos}?`)) return
+        setUsuarios(eliminarUsuario(usuario.run))
+    }
 
     return (
         <div>
@@ -47,6 +53,14 @@ export default function AdminUsuarios() {
                                     <Link to={`/admin/usuarios/${u.run}/editar`} className="btn btn-sm btn-outline-primary">
                                         Editar
                                     </Link>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-danger ms-2"
+                                        disabled={sesion?.run === u.run}
+                                        onClick={() => eliminar(u)}
+                                    >
+                                        Eliminar
+                                    </button>
                                 </td>
                             </tr>
                         ))}
