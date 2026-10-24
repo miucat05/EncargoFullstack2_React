@@ -1,11 +1,19 @@
-function ProductCard({ producto }){
+function ProductCard({ producto }) {
     return (
         <article className="product-card">
-            <img src={producto.imagen} alt={producto.nombre}/>
+            <img src={producto.imagen} alt={producto.nombre} />
             <a href={`/producto/${producto.id}`} className="product-title">
                 {producto.nombre}
             </a>
+            {producto.descuento && (
+                <span className="badge text-bg-danger mb-1">-{producto.descuento}%</span>
+            )}
             <p className="product-price">
+                {producto.precioOriginal && (
+                    <s className="text-muted me-2">
+                        ${producto.precioOriginal.toLocaleString('es-CL')}
+                    </s>
+                )}
                 ${producto.precio.toLocaleString('es-CL')}
             </p>
             <button type="button" className="btn-add-cart">
