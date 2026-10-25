@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { buscarUsuarioPorRun } from '../data/usuariosService'
 import { obtenerOrdenesPorUsuario, calcularTotalOrden } from '../data/ordenes'
-import { formatoPrecio } from '../utils/formato'
+import { formatoPrecio, claseEstado } from '../utils/formato'
 
 export default function AdminUsuarioHistorial() {
   const { run } = useParams()
@@ -73,11 +73,7 @@ export default function AdminUsuarioHistorial() {
                 <td>{orden.productos.length}</td>
                 <td>{formatoPrecio(calcularTotalOrden(orden))}</td>
                 <td>
-                  <span
-                    className={`badge ${
-                      orden.estado === 'Completada' ? 'text-bg-success' : 'text-bg-warning'
-                    }`}
-                  >
+                  <span className={`badge ${claseEstado(orden.estado)}`}>
                     {orden.estado}
                   </span>
                 </td>
