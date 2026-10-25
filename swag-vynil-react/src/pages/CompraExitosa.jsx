@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import DetalleCompra from '../components/DetalleCompra'
 import { obtenerOrdenPorId } from '../data/ordenes'
@@ -5,6 +6,7 @@ import { obtenerOrdenPorId } from '../data/ordenes'
 export default function CompraExitosa() {
     const { id } = useParams()
     const orden = obtenerOrdenPorId(id)
+    const [boletaEnviada, setBoletaEnviada] = useState(false)
 
     if (!orden || orden.estado !== 'Completada') {
         return (
@@ -23,9 +25,23 @@ export default function CompraExitosa() {
 
                 <DetalleCompra orden={orden} />
 
-                <div className="d-flex justify-content-center gap-2 mt-4">
+                {boletaEnviada && (
+                    <div className="alert alert-success mt-3 mb-0" role="alert">
+                        Boleta enviada a {orden.correo || 'tu correo'}.
+                    </div>
+                )}
+
+                <div className="d-flex justify-content-center flex-wrap gap-2 mt-4">
                     <button type="button" className="btn btn-danger" onClick={() => window.print()}>
-                        Imprimir boleta
+                        Imprimir boleta en PDF
+                    </button>
+                    {/* el envío es simulado: no hay servidor de correo */}
+                    <button
+                        type="button"
+                        className="btn btn-success"
+                        onClick={() => setBoletaEnviada(true)}
+                    >
+                        Enviar boleta por email
                     </button>
                     <Link to="/productos" className="btn btn-outline-secondary">Seguir comprando</Link>
                 </div>
