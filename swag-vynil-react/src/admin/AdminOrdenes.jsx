@@ -5,6 +5,7 @@ import {
   obtenerOrdenes,
   calcularTotalOrden,
 } from '../data/ordenes'
+import { claseEstado } from '../utils/formato'
 
 export default function AdminOrdenes() {
   const [ordenes] = useState(() => obtenerOrdenes())
@@ -63,6 +64,7 @@ export default function AdminOrdenes() {
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
               <p className="text-muted mb-1">Completadas</p>
+              <option value="Fallida">Fallida</option>
               <h3 className="fw-bold">
                 {ordenes.filter((orden) => orden.estado === 'Completada').length}
               </h3>
@@ -127,13 +129,7 @@ export default function AdminOrdenes() {
                     <td>{orden.fecha}</td>
                     <td>{formatoPrecio(calcularTotalOrden(orden))}</td>
                     <td>
-                      <span
-                        className={`badge ${
-                          orden.estado === 'Completada'
-                            ? 'text-bg-success'
-                            : 'text-bg-warning'
-                        }`}
-                      >
+                      <span className={`badge ${claseEstado(orden.estado)}`}>
                         {orden.estado}
                       </span>
                     </td>

@@ -83,3 +83,20 @@ export function calcularTotalOrden(orden) {
     0
   );
 }
+
+function guardarOrdenes(lista) {
+  localStorage.setItem(CLAVE, JSON.stringify(lista));
+}
+
+export function crearOrden(datos) {
+  const ordenes = obtenerOrdenes();
+  const id = ordenes.reduce((mayor, orden) => Math.max(mayor, orden.id), 0) + 1;
+  const orden = {
+    id,
+    fecha: new Date().toLocaleDateString("en-CA"), // AAAA-MM-DD en hora local
+    ...datos,
+  };
+
+  guardarOrdenes([...ordenes, orden]);
+  return orden;
+}

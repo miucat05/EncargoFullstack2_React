@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { crearOrden } from '../data/ordenes'
 import { useCarrito } from '../context/CarritoContext'
 import CampoFormulario from '../components/CampoFormulario'
 import ResumenCompra from '../components/ResumenCompra'
@@ -17,6 +18,8 @@ const vacio = {
     region: '',
     comuna: '',
     indicaciones: '',
+    metodoPago: 'Tarjeta',
+    simularError: false,
 }
 
 const obligatorio = (valor, mensaje) => (valor.trim() === '' ? mensaje : '')
@@ -38,17 +41,18 @@ function datosIniciales() {
 }
 
 export default function Checkout() {
-    const { items, total } = useCarrito()
+    const navigate = useNavigate()
+    const { items, total, vaciar } = useCarrito()
     const [datos, setDatos] = useState(datosIniciales)
     const [errores, setErrores] = useState({})
 
     const handleChange = (e) => {
-        const { name, value } = e.target
+        const { name, value, type, checked } = e.target
         setDatos((prev) => ({
             ...prev,
-            [name]: value,
-            // al cambiar la region se reinicia la comuna
-            ...CampoFormulario(name === 'region' ? { comuna: '' } : {}),
+            [name]: type === 'checkbox' ? checked : value,
+            // al cambiar la región se reinicia la comuna
+            ...(name === 'region' ? { comuna: '' } : {}),
         }))
     }
 
@@ -68,8 +72,36 @@ export default function Checkout() {
         setErrores(nuevos)
         if (Object.values(nuevos).some(Boolean)) return
 
-        //aqui se procesa el pago y se crea la ordene
-        console.log('Datos de compra válidos:', datos)
+        const pagoExitoso = !datos.simularError
+
+        const orden = crearOrden({
+            cliente: `${datos.nombre.trim()} ${datos.apellidos.trim()}`,
+            correo: datos.correo.trim(),
+            runUsuario: obtenerSesion()?.run ?? null,
+            productos: items.map(({ nombre, cantidad, precio, imagen }) => ({
+                nombre,
+                cantidad,
+                precio,
+                imagen,
+            })),
+            estado: pagoExitoso ? 'Completada' : 'Fallida',
+            metodoPago: datos.metodoPago,
+            entrega: {
+                calle: datos.calle.trim(),
+                departamento: datos.departamento.trim(),
+                region: datos.region,
+                comuna: datos.comuna,
+                indicaciones: datos.indicaciones.trim(),
+            },
+        })
+
+        if (pagoExitoso) {
+            navigate(`/compra/exitosa/${orden.id}`)
+            vaciar()
+        } else {
+            // el carrito se conserva para poder reintentar el pago
+            navigate(`/compra/error/${orden.id}`)
+        }
     }
 
     if (items.length === 0) {
@@ -180,7 +212,7 @@ export default function Checkout() {
                         </div>
                     </div>
 
-                    <CampoFormulario
+                                        <CampoFormulario
                         as="textarea"
                         rows={3}
                         label="Indicaciones para la entrega (opcional)"
@@ -189,6 +221,32 @@ export default function Checkout() {
                         value={datos.indicaciones}
                         onChange={handleChange}
                     />
+
+                    <h2 className="h5 mt-3">Pago</h2>
+                    <CampoFormulario
+                        as="select"
+                        label="Método de pago"
+                        id="metodoPago"
+                        value={datos.metodoPago}
+                        onChange={handleChange}
+                    >
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </CampoFormulario>
+
+                    <div className="form-check mb-3">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="simularError"
+                            name="simularError"
+                            checked={datos.simularError}
+                            onChange={handleChange}
+                        />
+                        <label className="form-check-label" htmlFor="simularError">
+                            Simular pago rechazado (solo para la demostración)
+                        </label>
+                    </div>
 
                     <div className="d-flex justify-content-between">
                         <Link to="/carrito" className="btn btn-outline-secondary">Volver al carrito</Link>
