@@ -28,6 +28,8 @@ import DetalleBlog from './pages/DetalleBlog'
 import Contacto from './pages/Contacto'
 import Carrito from './pages/Carrito'
 import Checkout from './pages/Checkout'
+import CompraExitosa from './pages/CompraExitosa'
+import CompraError from './pages/CompraError'
 
 function LayoutTienda() {
   return (
@@ -58,6 +60,8 @@ function App() {
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/carrito" element={<Carrito />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/compra/exitosa/:id" element={<CompraExitosa />} />
+          <Route path="/compra/error/:id" element={<CompraError />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
