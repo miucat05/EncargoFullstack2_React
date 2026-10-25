@@ -30,6 +30,7 @@ import Carrito from './pages/Carrito'
 import Checkout from './pages/Checkout'
 import CompraExitosa from './pages/CompraExitosa'
 import CompraError from './pages/CompraError'
+import AdminReportes from './admin/AdminReportes'
 
 function LayoutTienda() {
   return (
@@ -77,6 +78,7 @@ function App() {
           <Route path="categorias/nueva" element={<AdminCategoriaForm />} />
           <Route path="categorias/editar/:id" element={<AdminCategoriaForm />} />
           <Route path="usuarios/:run/historial" element={<AdminUsuarioHistorial />} />
+          <Route path="reportes" element={<AdminReportes />} />
         </Route>
       </Routes>
     </BrowserRouter>
