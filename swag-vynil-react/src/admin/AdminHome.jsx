@@ -5,34 +5,10 @@ function AdminHome() {
   return (
     <div className="container-fluid py-4">
       <div className="row">
-        {/* Menú vertical del administrador */}
-        <aside className="col-md-3 col-lg-2 mb-4">
-          <div className="list-group">
-            <div className="list-group-item active bg-primary">
-              Menú administrador
-            </div>
-
-            <Link to="/admin" className="list-group-item list-group-item-action">
-              Inicio
-            </Link>
-
-            <Link to="/admin/productos" className="list-group-item list-group-item-action">
-              Productos
-            </Link>
-
-            <Link to="/admin/categorias" className="list-group-item list-group-item-action">
-              Categorías
-            </Link>
-
-            <Link to="/admin/usuarios" className="list-group-item list-group-item-action">
-              Usuarios
-            </Link>
-          </div>
-        </aside>
-
         {/* Contenido central */}
-        <main className="col-md-9 col-lg-10">
+        <main className="col-12">
           <h1 className="mb-2">Panel de Administración</h1>
+
           <p className="text-muted">
             Bienvenido al panel de administración de Swag Vynil.
           </p>
