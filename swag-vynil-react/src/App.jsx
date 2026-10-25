@@ -19,6 +19,7 @@ import CategoriaDetalle from './pages/CategoriaDetalle'
 import Ofertas from './pages/Ofertas'
 import AdminOrdenes from './admin/AdminOrdenes'
 import AdminBoleta from './admin/AdminBoleta'
+import AdminUsuarioHistorial from './admin/AdminUsuarioHistorial'
 
 function LayoutTienda() {
   return (
@@ -55,6 +56,7 @@ function App() {
           <Route path="categorias" element={<AdminCategorias />} />
           <Route path="categorias/nueva" element={<AdminCategoriaForm />} />
           <Route path="categorias/editar/:id" element={<AdminCategoriaForm />} />
+          <Route path="usuarios/:run/historial" element={<AdminUsuarioHistorial />} />
         </Route>
       </Routes>
     </BrowserRouter>
