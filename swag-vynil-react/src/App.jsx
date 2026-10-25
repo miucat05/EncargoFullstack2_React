@@ -20,6 +20,8 @@ import Ofertas from './pages/Ofertas'
 import AdminOrdenes from './admin/AdminOrdenes'
 import AdminBoleta from './admin/AdminBoleta'
 import AdminUsuarioHistorial from './admin/AdminUsuarioHistorial'
+import Productos from './pages/Productos'
+import DetalleProducto from './pages/DetalleProducto'
 
 function LayoutTienda() {
   return (
@@ -42,6 +44,8 @@ function App() {
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/categorias/:categoria" element={<CategoriaDetalle />} />
           <Route path="/ofertas" element={<Ofertas />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/productos/:id" element={<DetalleProducto />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
