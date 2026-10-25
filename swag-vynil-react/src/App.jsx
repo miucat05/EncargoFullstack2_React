@@ -26,6 +26,7 @@ import Nosotros from './pages/Nosotros'
 import Blog from './pages/Blog'
 import DetalleBlog from './pages/DetalleBlog'
 import Contacto from './pages/Contacto'
+import Carrito from './pages/Carrito'
 
 function LayoutTienda() {
   return (
@@ -54,6 +55,7 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:id" element={<DetalleBlog />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/carrito" element={<Carrito />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
