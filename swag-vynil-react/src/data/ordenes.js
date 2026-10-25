@@ -1,4 +1,3 @@
-
 const CLAVE = "swag_ordenes";
 
 const ordenesIniciales = [
@@ -23,6 +22,40 @@ const ordenesIniciales = [
     estado: "Completada",
     metodoPago: "Transferencia",
   },
+    {
+    id: 3,
+    cliente: "Javier Romero",
+    runUsuario: "221231239",
+    fecha: "2026-10-22",
+    productos: [
+      { nombre: "Taylor Swift - 1989", cantidad: 1, precio: 25990 },
+      { nombre: "Justin Bieber - Purpose", cantidad: 2, precio: 18193 },
+    ],
+    estado: "Completada",
+    metodoPago: "Tarjeta",
+  },
+  {
+    id: 4,
+    cliente: "Catalina Campos",
+    runUsuario: "211231239",
+    fecha: "2026-10-23",
+    productos: [
+      { nombre: "Taylor Swift - Midnights", cantidad: 1, precio: 25990 },
+    ],
+    estado: "Pendiente",
+    metodoPago: "Transferencia",
+  },
+  {
+    id: 5,
+    cliente: "Javier Romero",
+    runUsuario: "221231239",
+    fecha: "2026-10-24",
+    productos: [
+      { nombre: "Justin Bieber - Believe", cantidad: 3, precio: 23391 },
+    ],
+    estado: "Completada",
+    metodoPago: "Tarjeta",
+  },
 ];
 
 export function obtenerOrdenes() {
@@ -38,6 +71,10 @@ export function obtenerOrdenes() {
 
 export function obtenerOrdenPorId(id) {
   return obtenerOrdenes().find((orden) => orden.id === Number(id));
+}
+
+export function obtenerOrdenesPorUsuario(run) {
+  return obtenerOrdenes().filter((orden) => orden.runUsuario === run);
 }
 
 export function calcularTotalOrden(orden) {
