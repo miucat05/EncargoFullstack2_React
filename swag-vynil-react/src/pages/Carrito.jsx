@@ -67,7 +67,7 @@ export default function Carrito() {
                     </button>
                   </div>
                 </td>
-                <td className="text-end">{formatoPrecio(item.precio * item.cantidad)}</td>
+                <td className="text-end">{formatoPrecio(item.precio * item.cantidad )}</td>
                 <td className="text-end">
                   <button
                     type="button"
