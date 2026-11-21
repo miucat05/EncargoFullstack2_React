@@ -4,6 +4,12 @@ import Checkout from './Checkout'
 import { CarritoProvider } from '../context/CarritoContext'
 import { obtenerOrdenes } from '../data/ordenes'
 
+// Token de prueba con la forma de un JWT: cabecera.contenido.firma
+function tokenDePrueba() {
+  const contenido = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))
+  return `cabecera.${contenido}.firma`
+}
+
 const items = [{ id: 1, nombre: 'Vinilo A', precio: 1000, imagen: '/a.jpg', cantidad: 2 }]
 
 function mostrar(carrito = items) {
@@ -68,6 +74,7 @@ describe('Checkout', () => {
 
   it('si hay sesión iniciada, los datos del cliente se completan automáticamente', () => {
     localStorage.setItem('sesion', JSON.stringify({
+      token: tokenDePrueba(),
       nombre: 'Javier', apellidos: 'Romero', correo: 'javier@gmail.com', direccion: 'Calle Falsa 123',
     }))
     mostrar()
