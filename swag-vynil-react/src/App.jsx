@@ -34,6 +34,8 @@ import AdminReportes from './admin/AdminReportes'
 import { Navigate } from 'react-router-dom'
 import RutaProtegida from './components/RutaProtegida'
 import { obtenerSesion } from './data/usuariosService'
+import { useEffect } from 'react'
+import { renovarSesionSiCorresponde } from './api/renovacion'
 
 function LayoutTienda() {
   return (
@@ -53,9 +55,14 @@ function AdminInicio() {
 }
 
 function App() {
+  useEffect(() => {
+    renovarSesionSiCorresponde()
+    const intervalo = setInterval(renovarSesionSiCorresponde, 60_000)
+    return () => clearInterval(intervalo)
+  }, [])
   return (
     <BrowserRouter>
-            <Routes>
+      <Routes>
         <Route element={<LayoutTienda />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
