@@ -13,13 +13,14 @@ function aFrontend(u) {
         region: u.region ?? '',
         comuna: u.comuna ?? '',
         direccion: u.direccion ?? '',
+        fechaNacimiento: u.fechaNacimiento ?? '',
         tipo: ROL_A_TIPO[u.rol] ?? 'Cliente',
     }
 }
 
 // Frontend -> backend: envía solo los campos que la API espera
 function aBackend(datos) {
-    const { run, nombre, apellidos, correo, contrasena, tipo, region, comuna, direccion } = datos
+    const { run, nombre, apellidos, correo, contrasena, tipo, region, comuna, direccion, fechaNacimiento } = datos
     return {
         run,
         nombre,
@@ -30,6 +31,7 @@ function aBackend(datos) {
         region,
         comuna,
         direccion,
+        fechaNacimiento: fechaNacimiento || undefined,
     }
 }
 
