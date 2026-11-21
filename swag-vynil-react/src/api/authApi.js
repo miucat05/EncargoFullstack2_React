@@ -15,3 +15,7 @@ export function registroApi(datos) {
     auth: false,
   })
 }
+
+export function renovarApi() {
+  return apiFetch('/api/v1/auth/refresh', { method: 'POST' })
+}

@@ -112,3 +112,14 @@ export function obtenerSesion() {
 export function cerrarSesion() {
   localStorage.removeItem(CLAVE_SESION)
 }
+
+// Milisegundos que le quedan al token de la sesión (null si no hay sesión)
+export function msParaExpirar() {
+  try {
+    const sesion = JSON.parse(localStorage.getItem(CLAVE_SESION))
+    const payload = sesion.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(atob(payload)).exp * 1000 - Date.now()
+  } catch {
+    return null
+  }
+}
