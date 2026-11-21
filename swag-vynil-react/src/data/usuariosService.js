@@ -62,6 +62,19 @@ export function guardarSesion(usuario) {
   localStorage.setItem(CLAVE_SESION, JSON.stringify(datosSinClave))
 }
 
+const ROL_A_TIPO = {
+  ADMINISTRADOR: 'Administrador',
+  VENDEDOR: 'Vendedor',
+  CLIENTE: 'Cliente',
+}
+
+// Guarda la sesión que devuelve el backend (incluye el token JWT)
+export function guardarSesionApi(respuesta) {
+  const { rol, ...datos } = respuesta
+  const sesion = { ...datos, rol, tipo: ROL_A_TIPO[rol] ?? 'Cliente' }
+  localStorage.setItem(CLAVE_SESION, JSON.stringify(sesion))
+}
+
 export function obtenerSesion() {
   try {
     return JSON.parse(localStorage.getItem(CLAVE_SESION))
