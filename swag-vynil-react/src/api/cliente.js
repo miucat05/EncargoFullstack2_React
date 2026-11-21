@@ -42,7 +42,12 @@ export async function apiFetch(ruta, { method = 'GET', body, auth = true } = {})
     datos = null
   }
 
-  if (!respuesta.ok) {
+    if (!respuesta.ok) {
+    // Token rechazado por el backend: se cierra la sesión y se vuelve al login
+    if (respuesta.status === 401 && auth && token) {
+      localStorage.removeItem(CLAVE_SESION)
+      window.location.href = '/login'
+    }
     const mensaje = datos?.message || datos?.detail || 'Ocurrió un error en la solicitud'
     throw new ApiError(mensaje, respuesta.status)
   }
