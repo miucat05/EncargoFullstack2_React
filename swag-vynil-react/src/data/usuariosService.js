@@ -75,6 +75,13 @@ export function guardarSesionApi(respuesta) {
   localStorage.setItem(CLAVE_SESION, JSON.stringify(sesion))
 }
 
+// Actualiza los datos de la sesión actual conservando el token
+export function actualizarSesion(cambios) {
+  const sesion = obtenerSesion()
+  if (!sesion) return
+  localStorage.setItem(CLAVE_SESION, JSON.stringify({ ...sesion, ...cambios }))
+}
+
 // Lee la fecha de expiración (exp, en segundos) que viene dentro del JWT
 function tokenVencido(token) {
   try {

@@ -71,6 +71,7 @@ export default function Registro() {
         region: datos.region,
         comuna: datos.comuna,
         direccion: datos.direccion.trim(),
+        fechaNacimiento: datos.fechaNacimiento || undefined,
       })
 
       alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.')
