@@ -2,7 +2,6 @@ import { useState } from 'react'
 import CampoFormulario from './CampoFormulario'
 import CampoContrasena from './CampoContrasena'
 import { regionesComunas } from '../data/usuarios-data'
-import { obtenerUsuarios } from '../data/usuariosService'
 import { validarRun, validarCorreo, validarContrasena } from '../utils/validaciones'
 
 const vacio = {
@@ -24,6 +23,8 @@ const normalizarRun = (valor) => valor.replace(/[.\-]/g, '').toUpperCase()
 export default function FormularioUsuario({ inicial = vacio, modoEdicion = false, mostrarTipo = true, onGuardar, onCancelar }) {
     const [datos, setDatos] = useState({ ...vacio, ...inicial })
     const [errores, setErrores] = useState({})
+    const [cargando, setCargando] = useState(false)
+    const [errorGeneral, setErrorGeneral] = useState('')
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -35,46 +36,49 @@ export default function FormularioUsuario({ inicial = vacio, modoEdicion = false
         }))
     }
 
-    const validar = () => {
-        const run = normalizarRun(datos.run)
-        const existentes = obtenerUsuarios()
-        const runRepetido = existentes.some((u) => u.run === run)
-        const correoRepetido = existentes.some(
-            (u) => u.run !== run && u.correo.toLowerCase() === datos.correo.trim().toLowerCase()
-        )
+    const validar = () => ({
+        run: modoEdicion ? '' : validarRun(datos.run),
+        nombre: obligatorio(datos.nombre, 'El nombre es obligatorio.'),
+        apellidos: obligatorio(datos.apellidos, 'Los apellidos son obligatorios.'),
+        correo: validarCorreo(datos.correo),
+        region: datos.region === '' ? 'Seleccione una región.' : '',
+        comuna: datos.comuna === '' ? 'Seleccione una comuna.' : '',
+        direccion: obligatorio(datos.direccion, 'La dirección es obligatoria.'),
+        contrasena: modoEdicion ? '' : validarContrasena(datos.contrasena),
+    })
 
-        return {
-            run: modoEdicion
-                ? ''
-                : validarRun(datos.run) || (runRepetido ? 'Ya existe un usuario con ese RUN.' : ''),
-            nombre: obligatorio(datos.nombre, 'El nombre es obligatorio.'),
-            apellidos: obligatorio(datos.apellidos, 'Los apellidos son obligatorios.'),
-            correo: validarCorreo(datos.correo) || (correoRepetido ? 'Ya existe una cuenta con ese correo.' : ''),
-            region: datos.region === '' ? 'Seleccione una región.' : '',
-            comuna: datos.comuna === '' ? 'Seleccione una comuna.' : '',
-            direccion: obligatorio(datos.direccion, 'La dirección es obligatoria.'),
-            contrasena: modoEdicion ? '' : validarContrasena(datos.contrasena),
-        }
-    }
-
-    const handleSubmit = (ev) => {
+    const handleSubmit = async (ev) => {
         ev.preventDefault()
+        setErrorGeneral('')
 
         const nuevos = validar()
         setErrores(nuevos)
         if (Object.values(nuevos).some(Boolean)) return
 
         const { contrasena, ...resto } = datos
-        onGuardar({
-            ...resto,
-            run: normalizarRun(datos.run),
-            nombre: datos.nombre.trim(),
-            apellidos: datos.apellidos.trim(),
-            correo: datos.correo.trim(),
-            direccion: datos.direccion.trim(),
-            //modo edicion nos se toca la contraseña
-            ...(modoEdicion ? {} : { contrasena }),
-        })
+        setCargando(true)
+        try {
+            await onGuardar({
+                ...resto,
+                run: normalizarRun(datos.run),
+                nombre: datos.nombre.trim(),
+                apellidos: datos.apellidos.trim(),
+                correo: datos.correo.trim(),
+                direccion: datos.direccion.trim(),
+                // en modo edición no se toca la contraseña
+                ...(modoEdicion ? {} : { contrasena }),
+            })
+        } catch (error) {
+            if (error.status === 409) {
+                // el backend indica si lo repetido es el RUN o el correo
+                if (error.message.includes('RUN')) setErrores({ run: error.message })
+                else setErrores({ correo: error.message })
+            } else {
+                setErrorGeneral(error.message)
+            }
+        } finally {
+            setCargando(false)
+        }
     }
 
     return (
@@ -131,6 +135,7 @@ export default function FormularioUsuario({ inicial = vacio, modoEdicion = false
                     onChange={handleChange}
                 >
                     <option value="Cliente">Cliente</option>
+                    <option value="Vendedor">Vendedor</option>
                     <option value="Administrador">Administrador</option>
                 </CampoFormulario>
             )}
@@ -182,8 +187,12 @@ export default function FormularioUsuario({ inicial = vacio, modoEdicion = false
                 />
             )}
 
+            {errorGeneral && <div className="alert alert-danger">{errorGeneral}</div>}
+
             <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-primary">Guardar</button>
+                <button type="submit" className="btn btn-primary" disabled={cargando}>
+                    {cargando ? 'Guardando...' : 'Guardar'}
+                </button>
                 <button type="button" className="btn btn-outline-secondary" onClick={onCancelar}>
                     Cancelar
                 </button>
