@@ -93,8 +93,8 @@ function App() {
             <Route element={<RutaProtegida roles={['ADMINISTRADOR']} />}>
               <Route path="usuarios" element={<AdminUsuarios />} />
               <Route path="usuarios/nuevo" element={<AdminUsuarioNuevo />} />
-              <Route path="usuarios/:run/editar" element={<AdminUsuarioEditar />} />
-              <Route path="usuarios/:run/historial" element={<AdminUsuarioHistorial />} />
+              <Route path="usuarios/:id/editar" element={<AdminUsuarioEditar />} />
+              <Route path="usuarios/:id/historial" element={<AdminUsuarioHistorial />} />
               <Route path="perfil" element={<AdminPerfil />} />
               <Route path="categorias" element={<AdminCategorias />} />
               <Route path="categorias/nueva" element={<AdminCategoriaForm />} />
