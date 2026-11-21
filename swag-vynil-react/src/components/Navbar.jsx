@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCarrito } from '../context/CarritoContext'
-import { obtenerCategorias } from '../data/productosService'
+import { listarCategoriasApi } from '../api/categoriasApi'
 import { formatoPrecio } from '../utils/formato'
 
 function EnlaceNav({ to, end, children }) {
@@ -18,7 +18,14 @@ function Navbar() {
     const navigate = useNavigate()
     const { total } = useCarrito()
     const [texto, setTexto] = useState('')
-    const categorias = obtenerCategorias()
+    const [categorias, setCategorias] = useState([])
+
+    // las categorías del menú vienen de la API
+    useEffect(() => {
+        listarCategoriasApi()
+            .then(setCategorias)
+            .catch(() => setCategorias([]))
+    }, [])
 
     const buscar = (e) => {
         e.preventDefault()
@@ -68,7 +75,7 @@ function Navbar() {
                                 </li>
                                 <li><hr className="dropdown-divider" /></li>
                                 {categorias.map((categoria) => (
-                                    <li key={categoria.nombre}>
+                                    <li key={categoria.id}>
                                         <Link
                                             className="dropdown-item"
                                             to={`/categorias/${categoria.nombre}`}

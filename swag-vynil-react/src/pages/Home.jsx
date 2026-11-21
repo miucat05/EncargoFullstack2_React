@@ -1,8 +1,19 @@
+import { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
-import { obtenerProductos } from '../data/productosService';
+import { listarProductosApi } from '../api/productosApi';
 
 function Home() {
-  const productos = obtenerProductos();
+  const [productos, setProductos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    listarProductosApi()
+      .then(setProductos)
+      .catch((e) => setError(e.message || 'No se pudieron cargar los productos.'))
+      .finally(() => setCargando(false));
+  }, []);
+
   return (
     <main className="container py-4">
       <section className="hero-section">
@@ -18,6 +29,10 @@ function Home() {
 
       <section id="productos" className="products-section">
         <h2>Productos disponibles</h2>
+
+        {error && <div className="alert alert-danger">{error}</div>}
+        {cargando && <p className="text-muted">Cargando productos...</p>}
+
         <div className="productos-grid">
           {productos.map((producto) => (
             <ProductCard key={producto.id} producto={producto} />
