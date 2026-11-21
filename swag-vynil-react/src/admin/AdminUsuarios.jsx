@@ -53,6 +53,12 @@ export default function AdminUsuarios() {
                                     <Link to={`/admin/usuarios/${u.run}/editar`} className="btn btn-sm btn-outline-primary">
                                         Editar
                                     </Link>
+                                    <Link
+                                        to={`/admin/usuarios/${u.run}/historial`}
+                                        className="btn btn-sm btn-outline-secondary ms-2"
+                                    >
+                                        Historial
+                                    </Link>
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-outline-danger ms-2"

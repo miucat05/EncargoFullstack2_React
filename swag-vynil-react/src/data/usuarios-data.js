@@ -22,7 +22,20 @@ export const usuarios = [
         region: "Región Metropolitana de Santiago",
         comuna: "Melipilla",
         direccion: "Calle Principal 124" 
+    },
+    {
+        run : "223505554",
+        nombre: "Antonella",
+        apellidos: "Acevedo ",
+        correo: "ant.acevedoc@duoc.cl",
+        contrasena: "Antonella1",
+        fechaNacimiento: "2007-13-03",
+        tipo: "Administrador",
+        region: "Región Metropolitana de Santiago",
+        comuna: "Melipilla",
+        direccion: "Calle Principal 124" 
     }
+
 ];
 
 export const regionesComunas = {

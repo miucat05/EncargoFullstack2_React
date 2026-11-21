@@ -1,136 +1,190 @@
 import { useState } from "react";
-const productos = [
-  {
-    id: 1,
-    nombre: "Taylor Swift - 1989",
-    precio: 25990,
-    imagen: "images/TAYLOR1.webp",
-    categoria: "Pop"
-  },
-  {
-    id: 2,
-    nombre: "Taylor Swift - Red (TV)",
-    precio: 25990,
-    imagen: "images/taylor 2.webp",
-    categoria: "Pop"
-  },
-  {
-    id: 3,
-    nombre: "Taylor Swift - Midnights",
-    precio: 25990,
-    imagen: "images/taylor3.webp",
-    categoria: "Pop"
-  },
-  {
-    id: 4,
-    nombre: "Taylor Swift - Evermore",
-    precio: 25990,
-    imagen: "images/tayy1.webp",
-    categoria: "Pop"
-  },
-  {
-    id: 5,
-    nombre: "Taylor Swift - Showgirl",
-    precio: 25990,
-    imagen: "images/taylor5.webp",
-    categoria: "Pop"
-  },
-  {
-    id: 6,
-    nombre: "Taylor Swift - Folklore",
-    precio: 25990,
-    imagen: "images/taylor6.webp",
-    categoria: "Pop"
-  },
-  {
-    id: 7,
-    nombre: "Justin Bieber - Changes",
-    precio: 25990,
-    imagen: "images/FFE9DFB9-862F-4B67-9F3A-658A4D0C8E20.webp",
-    categoria: "Urbano"
-  },
-  {
-    id: 8,
-    nombre: "Justin Bieber - Swag",
-    precio: 25990,
-    imagen: "images/swag.webp",
-    categoria: "Urbano"
-  },
-  {
-    id: 9,
-    nombre: "Justin Bieber - Purpose",
-    precio: 25990,
-    imagen: "images/purpose.webp",
-    categoria: "Urbano"
-  },
-  {
-    id: 10,
-    nombre: "Justin Bieber - My World",
-    precio: 25990,
-    imagen: "images/myworld.webp",
-    categoria: "Urbano"
-  },
-  {
-    id: 11,
-    nombre: "Justin Bieber - Justice",
-    precio: 25990,
-    imagen: "images/justice.webp",
-    categoria: "Urbano"
-  },
-  {
-    id: 12,
-    nombre: "Justin Bieber - Believe",
-    precio: 25990,
-    imagen: "images/believe.webp",
-    categoria: "Urbano"
-  }
-];
+import { obtenerProductos, crearProducto,actualizarProducto, eliminarProducto } from "../data/productosService";
+import ProductoForm from "../components/admin/ProductoForm";
 
 function AdminProductos() {
+  const [seccion, setSeccion] = useState("mostrar");
+  const [listaProductos, setListaProductos] = useState(() => obtenerProductos());
+  const [productoEditando, setProductoEditando] = useState(null);
+
   return (
-    <div>
-      <h1>Productos</h1>
+    <div className="container py-4">
+      <h1 className="mb-4">Administración de productos</h1>
 
-      <button>+ Nuevo producto</button>
+      <div className="d-flex flex-wrap gap-2 mb-4">
+        <button
+          className="btn btn-primary"
+          onClick={() => setSeccion("nuevo")}
+        >
+          + Nuevo producto
+        </button>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Precio</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => setSeccion("mostrar")}
+        >
+          Mostrar productos
+        </button>
 
-        <tbody>
-          {productos.map((producto) => (
-            <tr key={producto.id}>
-              <td>
-                <img
-                  src={`/${producto.imagen}`}
-                  alt={producto.nombre}
-                  width="80"
-                />
-              </td>
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => setSeccion("criticos")}
+        >
+          Productos críticos
+        </button>
 
-              <td>{producto.nombre}</td>
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => setSeccion("reportes")}
+        >
+          Reportes
+        </button>
+      </div>
 
-              <td>{producto.categoria}</td>
+    
+{(seccion === "nuevo" || seccion === "editar") && (
+  <ProductoForm
+    key={productoEditando ? productoEditando.id : "nuevo"}
+    productoInicial={productoEditando}
+    onGuardar={(datos) => {
+      if (productoEditando) {
+        actualizarProducto(productoEditando.id, datos);
+      } else {
+        crearProducto(datos);
+      }
 
-              <td>
-                ${producto.precio.toLocaleString("es-CL")}
-              </td>
+      setListaProductos(obtenerProductos());
+      setProductoEditando(null);
+      setSeccion("mostrar");
+      alert(
+        productoEditando
+          ? "Producto actualizado correctamente."
+          : "Producto guardado correctamente."
+      );
+    }}
+    onCancelar={() => {
+      setProductoEditando(null);
+      setSeccion("mostrar");
+    }}
+  />
+)}
 
-              <td>
-                <button>Editar</button>
-                <button>Eliminar</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      {seccion === "mostrar" && (
+        <div className="table-responsive">
+          <table className="table table-striped table-bordered align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {listaProductos.map((producto) => (
+                <tr key={producto.id}>
+                  <td>
+                    <img
+                      src={producto.imagen}
+                      alt={producto.nombre}
+                      width="65"
+                    />
+                  </td>
+                  <td>{producto.nombre}</td>
+                  <td>{producto.categoria}</td>
+                  <td>${producto.precio.toLocaleString("es-CL")}</td>
+                  <td>
+                    <button
+  className="btn btn-sm btn-outline-primary me-2"
+  onClick={() => {
+    setProductoEditando(producto);
+    setSeccion("editar");
+  }}
+>
+  Editar
+</button>
+                    <button
+  className="btn btn-sm btn-outline-danger"
+  onClick={() => {
+    if (window.confirm(`¿Eliminar "${producto.nombre}"?`)) {
+      eliminarProducto(producto.id);
+      setListaProductos(obtenerProductos());
+    }
+  }}
+>
+  Eliminar
+</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {seccion === "criticos" && (
+  <div>
+    <h2 className="h4 mb-3">Productos con stock crítico</h2>
+
+    {(() => {
+      const productosCriticos = listaProductos.filter(
+        (producto) =>
+          Number(producto.stock ?? 0) <=
+          Number(producto.stockCritico ?? 5)
+      );
+
+      if (productosCriticos.length === 0) {
+        return (
+          <div className="alert alert-success">
+            No hay productos con stock crítico.
+          </div>
+        );
+      }
+
+      return (
+        <div className="table-responsive">
+          <table className="table table-bordered table-striped align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>Producto</th>
+                <th>Stock disponible</th>
+                <th>Stock mínimo</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {productosCriticos.map((producto) => (
+                <tr key={producto.id}>
+                  <td>{producto.nombre}</td>
+                  <td>{producto.stock ?? 0}</td>
+                  <td>{producto.stockCritico ?? 5}</td>
+                  <td>
+                    <span className="badge text-bg-danger">
+                      Stock crítico
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    })()}
+  </div>
+)}
+
+      {seccion === "reportes" && (
+        <div className="card p-3">
+          <h2 className="h5">Resumen de productos</h2>
+          <p className="mb-0">
+            Total de productos registrados: <strong>{listaProductos.length}</strong>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
