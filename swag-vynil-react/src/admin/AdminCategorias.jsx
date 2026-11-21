@@ -1,15 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { obtenerCategorias, eliminarCategoria } from "../data/categorias";
+import { listarCategoriasApi, eliminarCategoriaApi } from "../api/categoriasApi";
 
 function AdminCategorias() {
-  // ESTADO: la lista. Si cambia, React redibuja la tabla.
-  const [categorias, setCategorias] = useState(() => obtenerCategorias());
+  const [categorias, setCategorias] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
-  const manejarEliminar = (categoria) => {
-    if (window.confirm(`¿Seguro que quieres eliminar "${categoria.nombre}"?`)) {
-      eliminarCategoria(categoria.id);
-      setCategorias(obtenerCategorias()); // vuelve a leer y actualiza la pantalla
+  const cargarCategorias = async () => {
+    try {
+      setCategorias(await listarCategoriasApi());
+      setError("");
+    } catch (e) {
+      setError(e.message || "No se pudieron cargar las categorías.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarCategorias();
+  }, []);
+
+  const manejarEliminar = async (categoria) => {
+    if (!window.confirm(`¿Seguro que quieres eliminar "${categoria.nombre}"?`)) return;
+    try {
+      await eliminarCategoriaApi(categoria.id);
+      await cargarCategorias();
+    } catch (e) {
+      // Por ejemplo: la categoría tiene productos asociados (409)
+      alert(e.message || "No se pudo eliminar la categoría.");
     }
   };
 
@@ -22,9 +42,14 @@ function AdminCategorias() {
         </Link>
       </div>
 
-      {categorias.length === 0 ? (
+      {error && <div className="alert alert-danger">{error}</div>}
+      {cargando && <p>Cargando categorías...</p>}
+
+      {!cargando && !error && categorias.length === 0 && (
         <div className="alert alert-info">Aún no hay categorías.</div>
-      ) : (
+      )}
+
+      {categorias.length > 0 && (
         <div className="table-responsive">
           <table className="table table-striped align-middle">
             <thead>
@@ -32,6 +57,7 @@ function AdminCategorias() {
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Descripción</th>
+                <th>Productos</th>
                 <th className="text-end">Acciones</th>
               </tr>
             </thead>
@@ -41,6 +67,7 @@ function AdminCategorias() {
                   <td>{c.id}</td>
                   <td>{c.nombre}</td>
                   <td>{c.descripcion}</td>
+                  <td>{c.cantidad}</td>
                   <td className="text-end">
                     <Link
                       to={`/admin/categorias/editar/${c.id}`}
