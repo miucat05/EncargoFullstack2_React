@@ -62,9 +62,41 @@ export function guardarSesion(usuario) {
   localStorage.setItem(CLAVE_SESION, JSON.stringify(datosSinClave))
 }
 
+const ROL_A_TIPO = {
+  ADMINISTRADOR: 'Administrador',
+  VENDEDOR: 'Vendedor',
+  CLIENTE: 'Cliente',
+}
+
+// Guarda la sesión que devuelve el backend (incluye el token JWT)
+export function guardarSesionApi(respuesta) {
+  const { rol, ...datos } = respuesta
+  const sesion = { ...datos, rol, tipo: ROL_A_TIPO[rol] ?? 'Cliente' }
+  localStorage.setItem(CLAVE_SESION, JSON.stringify(sesion))
+}
+
+// Lee la fecha de expiración (exp, en segundos) que viene dentro del JWT
+function tokenVencido(token) {
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const { exp } = JSON.parse(atob(payload))
+    return !exp || exp * 1000 < Date.now()
+  } catch {
+    return true // si no se puede leer, se considera inválido
+  }
+}
+
 export function obtenerSesion() {
   try {
-    return JSON.parse(localStorage.getItem(CLAVE_SESION))
+    const sesion = JSON.parse(localStorage.getItem(CLAVE_SESION))
+    if (!sesion) return null
+
+    // sesión del sistema antiguo (sin token) o con token vencido: se descarta
+    if (!sesion.token || tokenVencido(sesion.token)) {
+      localStorage.removeItem(CLAVE_SESION)
+      return null
+    }
+    return sesion
   } catch {
     return null
   }

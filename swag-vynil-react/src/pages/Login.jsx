@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import CampoFormulario from '../components/CampoFormulario'
 import CampoContrasena from '../components/CampoContrasena'
 import HistoriaEmpresa from '../components/HistoriaEmpresa'
-import { autenticar, guardarSesion } from '../data/usuariosService'
+import { guardarSesionApi } from '../data/usuariosService'
+import { loginApi } from '../api/authApi'
 import { validarCorreo, validarContrasena } from '../utils/validaciones'
 import './login.css'
 
@@ -12,6 +13,7 @@ export default function Login() {
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [errores, setErrores] = useState({})
+  const [cargando, setCargando] = useState(false)
 
   // validación en tiempo real, igual que el login.js original
   const cambiarCorreo = (e) => {
@@ -26,7 +28,7 @@ export default function Login() {
     setErrores((prev) => ({ ...prev, contrasena: validarContrasena(valor) }))
   }
 
-  const handleSubmit = (ev) => {
+  const handleSubmit = async (ev) => {
     ev.preventDefault()
 
     const nuevos = {
@@ -36,15 +38,21 @@ export default function Login() {
     setErrores(nuevos)
     if (nuevos.correo || nuevos.contrasena) return
 
-    const usuario = autenticar(correo, contrasena)
-    if (!usuario) {
-      setErrores({ contrasena: 'Correo o contraseña incorrectos.' })
-      return
+    setCargando(true)
+    try {
+      const respuesta = await loginApi(correo, contrasena)
+      guardarSesionApi(respuesta)
+      const esAdmin = respuesta.rol === 'ADMINISTRADOR' || respuesta.rol === 'VENDEDOR'
+      navigate(esAdmin ? '/admin' : '/')
+    } catch (error) {
+      const mensaje =
+        error.status === 401
+          ? 'Correo o contraseña incorrectos.'
+          : error.message
+      setErrores({ contrasena: mensaje })
+    } finally {
+      setCargando(false)
     }
-
-    guardarSesion(usuario)
-    const esAdmin = usuario.tipo === 'Administrador' || usuario.tipo === 'Vendedor'
-    navigate(esAdmin ? '/admin' : '/')
   }
 
   return (
@@ -78,7 +86,9 @@ export default function Login() {
           error={errores.contrasena}
         />
 
-        <button type="submit" className="btn btn-primary">Iniciar sesión</button>
+        <button type="submit" className="btn btn-primary" disabled={cargando}>
+          {cargando ? 'Ingresando...' : 'Iniciar sesión'}
+        </button>
 
         <p className="mt-3 mb-0">
           ¿No tienes cuenta? <Link to="/registro">Registrate aquí</Link>
