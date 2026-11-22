@@ -1,12 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import DetalleCompra from '../components/DetalleCompra'
-import { obtenerOrdenPorId } from '../data/ordenes'
+import { obtenerBoletaApi } from '../api/boletasApi'
 
 export default function CompraExitosa() {
     const { id } = useParams()
-    const orden = obtenerOrdenPorId(id)
+    const [orden, setOrden] = useState(null)
+    const [cargando, setCargando] = useState(true)
     const [boletaEnviada, setBoletaEnviada] = useState(false)
+
+    useEffect(() => {
+        obtenerBoletaApi(id)
+            .then(setOrden)
+            .catch(() => setOrden(null))
+            .finally(() => setCargando(false))
+    }, [id])
+
+    if (cargando) {
+        return <main className="container py-5 text-center">Cargando compra...</main>
+    }
 
     if (!orden || orden.estado !== 'Completada') {
         return (
