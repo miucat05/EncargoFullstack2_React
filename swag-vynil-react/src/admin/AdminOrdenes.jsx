@@ -1,16 +1,25 @@
-
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  obtenerOrdenes,
-  calcularTotalOrden,
-} from '../data/ordenes'
+import { calcularTotalOrden } from '../data/ordenes'
+import { listarBoletasApi } from '../api/boletasApi'
 import { claseEstado } from '../utils/formato'
 
 export default function AdminOrdenes() {
-  const [ordenes] = useState(() => obtenerOrdenes())
+  const [ordenes, setOrdenes] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('Todas')
+
+  useEffect(() => {
+    listarBoletasApi()
+      .then(setOrdenes)
+      .catch((e) => setError(e.message))
+      .finally(() => setCargando(false))
+  }, [])
+
+  if (cargando) return <p>Cargando órdenes...</p>
+  if (error) return <div className="alert alert-danger">{error}</div>
 
   const ordenesFiltradas = ordenes.filter((orden) => {
     const coincideBusqueda =
@@ -64,7 +73,6 @@ export default function AdminOrdenes() {
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
               <p className="text-muted mb-1">Completadas</p>
-              <option value="Fallida">Fallida</option>
               <h3 className="fw-bold">
                 {ordenes.filter((orden) => orden.estado === 'Completada').length}
               </h3>
@@ -103,6 +111,7 @@ export default function AdminOrdenes() {
                 <option value="Todas">Todas</option>
                 <option value="Pendiente">Pendiente</option>
                 <option value="Completada">Completada</option>
+                <option value="Fallida">Fallida</option>
               </select>
             </div>
           </div>
