@@ -10,7 +10,7 @@ function ProductCard({ producto }) {
             <Link to={`/productos/${producto.id}`} className="product-title">
                 {producto.nombre}
             </Link>
-            {producto.descuento && (
+            {producto.descuento > 0 && (
                 <span className="badge text-bg-danger mb-1">-{producto.descuento}%</span>
             )}
             <p className="product-price">
