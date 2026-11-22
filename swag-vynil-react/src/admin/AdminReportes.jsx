@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import TarjetaDato from '../components/admin/TarjetaDato'
 import GraficoBarras from '../components/admin/GraficoBarras'
-import { obtenerOrdenes } from '../data/ordenes'
-import { obtenerUsuarios } from '../data/usuariosService'
+import { listarBoletasApi } from '../api/boletasApi'
+import { listarUsuariosApi } from '../api/usuariosApi'
 import { formatoPrecio } from '../utils/formato'
 import {
   filtrarPorFecha,
@@ -25,10 +25,24 @@ function Seccion({ titulo, children }) {
 }
 
 export default function AdminReportes() {
-  const [ordenes] = useState(() => obtenerOrdenes())
-  const [usuarios] = useState(() => obtenerUsuarios())
+  const [ordenes, setOrdenes] = useState([])
+  const [usuarios, setUsuarios] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
+  useEffect(() => {
+    Promise.all([listarBoletasApi(), listarUsuariosApi()])
+      .then(([boletas, listaUsuarios]) => {
+        setOrdenes(boletas)
+        setUsuarios(listaUsuarios)
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setCargando(false))
+  }, [])
+
+  if (cargando) return <p>Cargando reportes...</p>
+  if (error) return <div className="alert alert-danger">{error}</div>
 
   const filtradas = filtrarPorFecha(ordenes, desde, hasta)
   const cantidadCompletadas = filtradas.filter((orden) => orden.estado === 'Completada').length

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { crearOrden } from '../data/ordenes'
+import { crearBoletaApi } from '../api/boletasApi'
 import { useCarrito } from '../context/CarritoContext'
 import CampoFormulario from '../components/CampoFormulario'
 import ResumenCompra from '../components/ResumenCompra'
@@ -45,6 +45,8 @@ export default function Checkout() {
     const { items, total, vaciar } = useCarrito()
     const [datos, setDatos] = useState(datosIniciales)
     const [errores, setErrores] = useState({})
+    const [cargando, setCargando] = useState(false)
+    const [errorServidor, setErrorServidor] = useState('')
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -65,42 +67,40 @@ export default function Checkout() {
         comuna: datos.comuna === '' ? 'Seleccione una comuna.' : '',
     })
 
-    const handleSubmit = (ev) => {
+    const handleSubmit = async (ev) => {
         ev.preventDefault()
+        setErrorServidor('')
 
         const nuevos = validar()
         setErrores(nuevos)
         if (Object.values(nuevos).some(Boolean)) return
 
-        const pagoExitoso = !datos.simularError
-
-        const orden = crearOrden({
-            cliente: `${datos.nombre.trim()} ${datos.apellidos.trim()}`,
-            correo: datos.correo.trim(),
-            runUsuario: obtenerSesion()?.run ?? null,
-            productos: items.map(({ nombre, cantidad, precio, imagen }) => ({
-                nombre,
-                cantidad,
-                precio,
-                imagen,
-            })),
-            estado: pagoExitoso ? 'Completada' : 'Fallida',
-            metodoPago: datos.metodoPago,
-            entrega: {
+        setCargando(true)
+        try {
+            // el servidor calcula precios y total: solo se envían ids y cantidades
+            const orden = await crearBoletaApi({
+                items: items.map(({ id, cantidad }) => ({ productoId: id, cantidad })),
                 calle: datos.calle.trim(),
                 departamento: datos.departamento.trim(),
                 region: datos.region,
                 comuna: datos.comuna,
                 indicaciones: datos.indicaciones.trim(),
-            },
-        })
+                metodoPago: datos.metodoPago,
+                pagoRechazado: datos.simularError,
+            })
 
-        if (pagoExitoso) {
-            navigate(`/compra/exitosa/${orden.id}`)
-            vaciar()
-        } else {
-            // el carrito se conserva para poder reintentar el pago
-            navigate(`/compra/error/${orden.id}`)
+            if (orden.estado === 'Completada') {
+                navigate(`/compra/exitosa/${orden.id}`)
+                vaciar()
+            } else {
+                // el carrito se conserva para poder reintentar el pago
+                navigate(`/compra/error/${orden.id}`)
+            }
+        } catch (error) {
+            // por ejemplo: "Stock insuficiente de ..."
+            setErrorServidor(error.message)
+        } finally {
+            setCargando(false)
         }
     }
 
@@ -212,7 +212,7 @@ export default function Checkout() {
                         </div>
                     </div>
 
-                                        <CampoFormulario
+                    <CampoFormulario
                         as="textarea"
                         rows={3}
                         label="Indicaciones para la entrega (opcional)"
@@ -247,11 +247,13 @@ export default function Checkout() {
                             Simular pago rechazado (solo para la demostración)
                         </label>
                     </div>
+                    
+                    {errorServidor && <div className="alert alert-danger">{errorServidor}</div>}
 
                     <div className="d-flex justify-content-between">
                         <Link to="/carrito" className="btn btn-outline-secondary">Volver al carrito</Link>
-                        <button type="submit" className="btn btn-success">
-                            Pagar ahora {formatoPrecio(total)}
+                        <button type="submit" className="btn btn-success" disabled={cargando}>
+                            {cargando ? 'Procesando...' : `Pagar ahora ${formatoPrecio(total)}`}
                         </button>
                     </div>
                 </form>
