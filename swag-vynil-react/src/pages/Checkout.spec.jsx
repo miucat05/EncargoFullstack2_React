@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Checkout from './Checkout'
 import { CarritoProvider } from '../context/CarritoContext'
-import { obtenerOrdenes } from '../data/ordenes'
 
 // Token de prueba con la forma de un JWT: cabecera.contenido.firma
 function tokenDePrueba() {
@@ -11,6 +10,28 @@ function tokenDePrueba() {
 }
 
 const items = [{ id: 1, nombre: 'Vinilo A', precio: 1000, imagen: '/a.jpg', cantidad: 2 }]
+
+// Boleta con la forma que responde el backend
+function boleta(estado) {
+  return {
+    id: 7, usuarioId: 1, run: '211231239', cliente: 'Catalina Campos', correo: 'cata@gmail.com',
+    fecha: '2026-11-22T10:00:00', estado, metodoPago: 'Tarjeta', total: 2000,
+    calle: 'Los Crisantemos 123', departamento: null, region: 'R', comuna: 'C', indicaciones: null,
+    detalles: [{ productoId: 1, nombre: 'Vinilo A', imagen: '/a.jpg', cantidad: 2, precioUnitario: 1000, subtotal: 2000 }],
+  }
+}
+
+// mock: reemplaza fetch para que la prueba no llame al servidor real
+function simularApi(cuerpo, status = 201) {
+  return spyOn(window, 'fetch').and.callFake(() =>
+    Promise.resolve(
+      new Response(JSON.stringify(cuerpo), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+  )
+}
 
 function mostrar(carrito = items) {
   localStorage.setItem('carrito', JSON.stringify(carrito))
@@ -83,26 +104,44 @@ describe('Checkout', () => {
     expect(screen.getByLabelText('Calle').value).toBe('Calle Falsa 123')
   })
 
-  it('pago correcto: crea la orden "Completada", vacía el carrito y va a la vista de éxito', () => {
+  it('pago correcto: envía la boleta a la API, vacía el carrito y va a la vista de éxito', async () => {
+    const espia = simularApi(boleta('COMPLETADA'))
     mostrar()
     completarFormulario()
     fireEvent.click(screen.getByText(/Pagar ahora/))
 
-    expect(screen.getByText('PAGO CORRECTO')).toBeTruthy()
-    const ultima = obtenerOrdenes().pop()
-    expect(ultima.estado).toBe('Completada')
-    expect(ultima.cliente).toBe('Catalina Campos')
+    expect(await screen.findByText('PAGO CORRECTO')).toBeTruthy()
+
+    const [url, opciones] = espia.calls.mostRecent().args
+    expect(url).toContain('/api/v1/boletas')
+    expect(opciones.method).toBe('POST')
+    const cuerpo = JSON.parse(opciones.body)
+    // solo viajan ids y cantidades: el precio lo calcula el servidor
+    expect(cuerpo.items).toEqual([{ productoId: 1, cantidad: 2 }])
+    expect(cuerpo.pagoRechazado).toBe(false)
     expect(JSON.parse(localStorage.getItem('carrito')).length).toBe(0)
   })
 
-  it('pago rechazado: crea la orden "Fallida", conserva el carrito y va a la vista de error', () => {
+  it('pago rechazado: envía pagoRechazado, conserva el carrito y va a la vista de error', async () => {
+    const espia = simularApi(boleta('FALLIDA'))
     mostrar()
     completarFormulario()
     fireEvent.click(screen.getByLabelText(/Simular pago rechazado/))
     fireEvent.click(screen.getByText(/Pagar ahora/))
 
-    expect(screen.getByText('PAGO CON ERROR')).toBeTruthy()
-    expect(obtenerOrdenes().pop().estado).toBe('Fallida')
+    expect(await screen.findByText('PAGO CON ERROR')).toBeTruthy()
+    expect(JSON.parse(espia.calls.mostRecent().args[1].body).pagoRechazado).toBe(true)
+    expect(JSON.parse(localStorage.getItem('carrito')).length).toBe(1)
+  })
+
+  it('error del servidor: si no hay stock muestra el mensaje y no sale del checkout', async () => {
+    simularApi({ status: 409, message: 'Stock insuficiente de "Vinilo A" (quedan 1)' }, 409)
+    mostrar()
+    completarFormulario()
+    fireEvent.click(screen.getByText(/Pagar ahora/))
+
+    expect(await screen.findByText(/Stock insuficiente de "Vinilo A"/)).toBeTruthy()
+    expect(screen.queryByText('PAGO CORRECTO')).toBeNull()
     expect(JSON.parse(localStorage.getItem('carrito')).length).toBe(1)
   })
 })
