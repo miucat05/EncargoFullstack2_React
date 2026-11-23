@@ -1,25 +1,33 @@
 import { useState } from "react";
-import { validarNombreCategoria } from "../../data/categorias";
+
+// Valida el formato; si el nombre está repetido lo avisa el backend (409)
+function validarNombre(nombre) {
+  const limpio = nombre.trim();
+  if (limpio === "") return "El nombre es obligatorio.";
+  if (limpio.length < 3) return "El nombre debe tener al menos 3 caracteres.";
+  if (limpio.length > 50) return "El nombre no puede pasar de 50 caracteres.";
+  return "";
+}
 
 // Este componente solo muestra el formulario y valida.
 // Recibe 3 PROPS desde afuera:
 //   categoriaInicial -> datos para rellenar (al editar)
-//   onGuardar        -> función que se ejecuta si todo está bien
+//   onGuardar        -> función async que guarda; devuelve "" si salió bien o el error
 //   onCancelar       -> función del botón Cancelar
 function CategoriaForm({ categoriaInicial, onGuardar, onCancelar }) {
-  // ESTADOS: lo que el usuario va escribiendo
   const [nombre, setNombre] = useState(categoriaInicial?.nombre ?? "");
   const [descripcion, setDescripcion] = useState(categoriaInicial?.descripcion ?? "");
   const [errorNombre, setErrorNombre] = useState("");
 
-  const manejarEnvio = (evento) => {
-    evento.preventDefault(); // evita que la página se recargue
+  const manejarEnvio = async (evento) => {
+    evento.preventDefault();
 
-    const error = validarNombreCategoria(nombre, categoriaInicial?.id);
+    const error = validarNombre(nombre);
     setErrorNombre(error);
     if (error) return;
 
-    onGuardar({ nombre, descripcion });
+    const errorServidor = await onGuardar({ nombre: nombre.trim(), descripcion });
+    if (errorServidor) setErrorNombre(errorServidor);
   };
 
   return (

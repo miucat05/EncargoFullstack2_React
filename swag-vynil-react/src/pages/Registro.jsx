@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import CampoFormulario from '../components/CampoFormulario'
 import CampoContrasena from '../components/CampoContrasena'
 import { regionesComunas } from '../data/usuarios-data'
-import { crearUsuario, buscarUsuarioPorCorreo } from '../data/usuariosService'
+import { registroApi } from '../api/authApi'
 import { validarRun, validarCorreo, validarContrasena } from '../utils/validaciones'
 import './registro.css'
 
@@ -26,6 +26,7 @@ export default function Registro() {
   const navigate = useNavigate()
   const [datos, setDatos] = useState(inicial)
   const [errores, setErrores] = useState({})
+  const [cargando, setCargando] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -52,33 +53,45 @@ export default function Registro() {
         : '',
   })
 
-  const handleSubmit = (ev) => {
+  const handleSubmit = async (ev) => {
     ev.preventDefault()
 
     const nuevos = validar()
     setErrores(nuevos)
     if (Object.values(nuevos).some(Boolean)) return
 
-    if (buscarUsuarioPorCorreo(datos.correo)) {
-      setErrores({ correo: 'Ya existe una cuenta con ese correo.' })
-      return
+    setCargando(true)
+    try {
+      await registroApi({
+        run: datos.run.replace(/[.\-]/g, '').toUpperCase(),
+        nombre: datos.nombre.trim(),
+        apellidos: datos.apellidos.trim(),
+        correo: datos.correo.trim(),
+        contrasena: datos.contrasena,
+        region: datos.region,
+        comuna: datos.comuna,
+        direccion: datos.direccion.trim(),
+        fechaNacimiento: datos.fechaNacimiento || undefined,
+      })
+
+      alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.')
+      navigate('/login')
+    } catch (error) {
+      if (error.status === 409) {
+        // el backend avisa si lo repetido es el RUN o el correo
+        if (error.message.includes('RUN')) {
+          setErrores({ run: error.message })
+        } else {
+          setErrores({ correo: error.message })
+        }
+      } else if (error.status === 400) {
+        setErrores({ correo: 'Revisa los datos ingresados.' })
+      } else {
+        setErrores({ correo: error.message })
+      }
+    } finally {
+      setCargando(false)
     }
-
-    crearUsuario({
-      run: datos.run.replace(/[.\-]/g, '').toUpperCase(),
-      nombre: datos.nombre.trim(),
-      apellidos: datos.apellidos.trim(),
-      correo: datos.correo.trim(),
-      contrasena: datos.contrasena,
-      fechaNacimiento: datos.fechaNacimiento,
-      tipo: 'Cliente',
-      region: datos.region,
-      comuna: datos.comuna,
-      direccion: datos.direccion.trim(),
-    })
-
-    alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.')
-    navigate('/login')
   }
 
   return (
@@ -189,7 +202,9 @@ export default function Registro() {
           error={errores.confirmar}
         />
 
-        <button type="submit" className="btn btn-primary">Registrarse</button>
+        <button type="submit" className="btn btn-primary" disabled={cargando}>
+          {cargando ? 'Registrando...' : 'Registrarse'}
+        </button>
 
         <p className="mt-3 mb-0">
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>

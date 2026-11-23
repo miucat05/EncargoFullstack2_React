@@ -1,12 +1,47 @@
+import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ComprarProducto from '../components/ComprarProducto'
 import ListaProductos from '../components/ListaProductos'
-import { obtenerProductoPorId, obtenerProductosPorCategoria } from '../data/productosService'
+import { obtenerProductoApi, listarProductosApi } from '../api/productosApi'
 import { formatoPrecio } from '../utils/formato'
 
 export default function DetalleProducto() {
     const { id } = useParams()
-    const producto = obtenerProductoPorId(id)
+    const [producto, setProducto] = useState(null)
+    const [relacionados, setRelacionados] = useState([])
+    const [cargando, setCargando] = useState(true)
+
+    useEffect(() => {
+        let activo = true
+        setCargando(true)
+
+        obtenerProductoApi(id)
+            .then(async (p) => {
+                // otros productos de la misma categoría
+                const mismos = await listarProductosApi(p.categoria).catch(() => [])
+                if (!activo) return
+                setProducto(p)
+                setRelacionados(mismos.filter((x) => x.id !== p.id).slice(0, 4))
+            })
+            .catch(() => {
+                if (activo) setProducto(null)
+            })
+            .finally(() => {
+                if (activo) setCargando(false)
+            })
+
+        return () => {
+            activo = false
+        }
+    }, [id])
+
+    if (cargando) {
+        return (
+            <main className="container py-4">
+                <p className="text-muted">Cargando producto...</p>
+            </main>
+        )
+    }
 
     if (!producto) {
         return (
@@ -16,10 +51,6 @@ export default function DetalleProducto() {
             </main>
         )
     }
-
-    const relacionados = obtenerProductosPorCategoria(producto.categoria)
-        .filter((p) => p.id !== producto.id)
-        .slice(0, 4)
 
     return (
         <main className="container py-4">

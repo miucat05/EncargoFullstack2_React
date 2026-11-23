@@ -1,17 +1,24 @@
 const equipo = [
   {
     nombre: 'Javier Romero V.',
-    rol: 'Desarrollador Frontend',
+    rol: 'Desarrollador',
     foto: '/images/mcloving.jpg',
     descripcion:
-      'Estudiante de Ing. Informática. Encargado de maquetación HTML, CSS y estructura de vistas públicas.',
+      'Estudiante de Ing. Informática. Encargado de creación y lógica de carrito, ofertas, categorias y vistas admin.',
   },
   {
     nombre: 'Catalina Campos C.',
-    rol: 'Desarrollador JavaScript',
+    rol: 'Desarrolladora',
+    foto: '/images/mclovin_mujer2.jpg',
+    descripcion:
+      'Estudiante de Ing. Informática. Encargada de Pruebas Jasmine/Karma, productos, barra de navegación, blog, contacto y home.',
+  },
+  {
+    nombre: 'Antonella Acevedo.',
+    rol: 'Desarrolladora',
     foto: '/images/mclova.jpg',
     descripcion:
-      'Estudiante de Ing. Informática. Encargado de validaciones de formularios y lógica del carrito en LocalStorage.',
+      'Estudiante de Ing. Informática. Encargado de vistas admin categorías, productos y ordenes .',
   },
 ]
 

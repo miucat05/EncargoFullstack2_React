@@ -1,11 +1,27 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { buscarUsuarioPorRun } from '../data/usuariosService'
-import { obtenerOrdenesPorUsuario, calcularTotalOrden } from '../data/ordenes'
-import { formatoPrecio } from '../utils/formato'
+import { obtenerUsuarioApi } from '../api/usuariosApi'
+import { boletasDeUsuarioApi } from '../api/boletasApi'
+import { calcularTotalOrden } from '../data/ordenes'
+import { formatoPrecio, claseEstado } from '../utils/formato'
 
 export default function AdminUsuarioHistorial() {
-  const { run } = useParams()
-  const usuario = buscarUsuarioPorRun(run)
+  const { id } = useParams()
+  const [usuario, setUsuario] = useState(null)
+  const [ordenes, setOrdenes] = useState([])
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    Promise.all([obtenerUsuarioApi(id), boletasDeUsuarioApi(id)])
+      .then(([datosUsuario, boletas]) => {
+        setUsuario(datosUsuario)
+        setOrdenes(boletas)
+      })
+      .catch(() => setUsuario(null))
+      .finally(() => setCargando(false))
+  }, [id])
+
+  if (cargando) return <p>Cargando historial...</p>
 
   if (!usuario) {
     return (
@@ -17,8 +33,6 @@ export default function AdminUsuarioHistorial() {
       </div>
     )
   }
-
-  const ordenes = obtenerOrdenesPorUsuario(run)
   const totalComprado = ordenes
     .filter((orden) => orden.estado === 'Completada')
     .reduce((suma, orden) => suma + calcularTotalOrden(orden), 0)
@@ -73,11 +87,7 @@ export default function AdminUsuarioHistorial() {
                 <td>{orden.productos.length}</td>
                 <td>{formatoPrecio(calcularTotalOrden(orden))}</td>
                 <td>
-                  <span
-                    className={`badge ${
-                      orden.estado === 'Completada' ? 'text-bg-success' : 'text-bg-warning'
-                    }`}
-                  >
+                  <span className={`badge ${claseEstado(orden.estado)}`}>
                     {orden.estado}
                   </span>
                 </td>

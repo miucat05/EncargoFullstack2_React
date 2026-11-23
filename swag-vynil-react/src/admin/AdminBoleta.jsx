@@ -1,13 +1,21 @@
-
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import {
-  obtenerOrdenPorId,
-  calcularTotalOrden,
-} from '../data/ordenes'
+import { calcularTotalOrden } from '../data/ordenes'
+import { obtenerBoletaApi } from '../api/boletasApi'
 
 export default function AdminBoleta() {
   const { id } = useParams()
-  const orden = obtenerOrdenPorId(id)
+  const [orden, setOrden] = useState(null)
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    obtenerBoletaApi(id)
+      .then(setOrden)
+      .catch(() => setOrden(null))
+      .finally(() => setCargando(false))
+  }, [id])
+
+  if (cargando) return <p>Cargando boleta...</p>
 
   const formatoPrecio = (precio) =>
     precio.toLocaleString('es-CL', {
