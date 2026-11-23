@@ -1,15 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { obtenerUsuarios, eliminarUsuario, obtenerSesion } from "../data/usuariosService";
+import { obtenerSesion } from "../data/usuariosService";
+import { listarUsuariosApi, eliminarUsuarioApi } from "../api/usuariosApi";
+
+const COLOR_TIPO = {
+    Administrador: 'text-bg-warning',
+    Vendedor: 'text-bg-info',
+    Cliente: 'text-bg-secondary',
+}
 
 export default function AdminUsuarios() {
-    const [usuarios, setUsuarios] = useState(() => obtenerUsuarios())
+    const [usuarios, setUsuarios] = useState([])
+    const [cargando, setCargando] = useState(true)
+    const [error, setError] = useState('')
     const sesion = obtenerSesion()
 
-    const eliminar = (usuario) => {
+    useEffect(() => {
+        listarUsuariosApi()
+            .then(setUsuarios)
+            .catch((e) => setError(e.message))
+            .finally(() => setCargando(false))
+    }, [])
+
+    const eliminar = async (usuario) => {
         if (!window.confirm(`¿Eliminar a ${usuario.nombre} ${usuario.apellidos}?`)) return
-        setUsuarios(eliminarUsuario(usuario.run))
+        try {
+            await eliminarUsuarioApi(usuario.id)
+            setUsuarios((prev) => prev.filter((u) => u.id !== usuario.id))
+        } catch (e) {
+            alert(e.message)
+        }
     }
+
+    if (cargando) return <p>Cargando usuarios...</p>
+    if (error) return <div className="alert alert-danger">{error}</div>
 
     return (
         <div>
@@ -38,23 +62,23 @@ export default function AdminUsuarios() {
                     </thead>
                     <tbody>
                         {usuarios.map((u) => (
-                            <tr key={u.run}>
+                            <tr key={u.id}>
                                 <td>{u.run}</td>
                                 <td>{u.nombre} {u.apellidos}</td>
                                 <td>{u.correo}</td>
                                 <td>
-                                    <span className={`badge ${u.tipo === 'Administrador' ? 'text-bg-warning' : 'text-bg-secondary'}`}>
+                                    <span className={`badge ${COLOR_TIPO[u.tipo]}`}>
                                         {u.tipo}
                                     </span>
                                 </td>
                                 <td>{u.region}</td>
                                 <td>{u.comuna}</td>
                                 <td className="text-end">
-                                    <Link to={`/admin/usuarios/${u.run}/editar`} className="btn btn-sm btn-outline-primary">
+                                    <Link to={`/admin/usuarios/${u.id}/editar`} className="btn btn-sm btn-outline-primary">
                                         Editar
                                     </Link>
                                     <Link
-                                        to={`/admin/usuarios/${u.run}/historial`}
+                                        to={`/admin/usuarios/${u.id}/historial`}
                                         className="btn btn-sm btn-outline-secondary ms-2"
                                     >
                                         Historial
@@ -62,7 +86,7 @@ export default function AdminUsuarios() {
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-outline-danger ms-2"
-                                        disabled={sesion?.run === u.run}
+                                        disabled={sesion?.id === u.id}
                                         onClick={() => eliminar(u)}
                                     >
                                         Eliminar

@@ -1,16 +1,31 @@
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import FormularioUsuario from '../components/FormularioUsuario'
-import { buscarUsuarioPorRun, actualizarUsuario } from '../data/usuariosService'
+import { obtenerUsuarioApi, actualizarUsuarioApi } from '../api/usuariosApi'
 
 export default function AdminUsuarioEditar() {
-    const { run } = useParams()
+    const { id } = useParams()
     const navigate = useNavigate()
-    const usuario = buscarUsuarioPorRun(run)
+    const [usuario, setUsuario] = useState(null)
+    const [cargando, setCargando] = useState(true)
+    const [error, setError] = useState(null)
 
-    if (!usuario) {
+    useEffect(() => {
+        obtenerUsuarioApi(id)
+            .then(setUsuario)
+            .catch(setError)
+            .finally(() => setCargando(false))
+    }, [id])
+
+    if (cargando) return <p>Cargando usuario...</p>
+
+    if (error || !usuario) {
         return (
             <div>
-                <h1 className='h3 mb-3'>Usuario no encontrado</h1>
+                <h1 className='h3 mb-3'>
+                    {error?.status === 404 ? 'Usuario no encontrado' : 'No se pudo cargar el usuario'}
+                </h1>
+                {error && error.status !== 404 && <p className='text-danger'>{error.message}</p>}
                 <Link to="/admin/usuarios" className='btn btn-outline-secondary'>
                     Volver al listado
                 </Link>
@@ -18,8 +33,8 @@ export default function AdminUsuarioEditar() {
         )
     }
 
-    const guardar = (cambios) => {
-        actualizarUsuario(run, cambios)
+    const guardar = async (cambios) => {
+        await actualizarUsuarioApi(id, cambios)
         navigate('/admin/usuarios')
     }
 
@@ -27,11 +42,11 @@ export default function AdminUsuarioEditar() {
         <div>
             <h1 className='h3 mb-3'>Editar usuario</h1>
             <div style={{ maxWidth: 640 }}>
-                <FormularioUsuario 
+                <FormularioUsuario
                     inicial={usuario}
                     modoEdicion
                     onGuardar={guardar}
-                    onCancelar={() => navigate ('/admin/usuarios')}
+                    onCancelar={() => navigate('/admin/usuarios')}
                 />
             </div>
         </div>

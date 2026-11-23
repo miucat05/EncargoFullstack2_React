@@ -1,33 +1,45 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FormularioUsuario from '../components/FormularioUsuario'
-import {
-  obtenerSesion,
-  buscarUsuarioPorRun,
-  actualizarUsuario,
-  guardarSesion,
-} from '../data/usuariosService'
+import { obtenerSesion, actualizarSesion } from '../data/usuariosService'
+import { obtenerUsuarioApi, actualizarUsuarioApi } from '../api/usuariosApi'
 
 export default function AdminPerfil() {
-  const sesion = obtenerSesion()
-  const [usuario, setUsuario] = useState(() => (sesion ? buscarUsuarioPorRun(sesion.run) : null))
+  const idSesion = obtenerSesion()?.id
+  const [usuario, setUsuario] = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
   const [editando, setEditando] = useState(false)
   const [guardado, setGuardado] = useState(false)
+
+  useEffect(() => {
+    if (!idSesion) {
+      setCargando(false)
+      return
+    }
+    obtenerUsuarioApi(idSesion)
+      .then(setUsuario)
+      .catch((e) => setError(e.message))
+      .finally(() => setCargando(false))
+  }, [idSesion])
+
+  if (cargando) return <p>Cargando perfil...</p>
 
   if (!usuario) {
     return (
       <div>
         <h1 className="h3 mb-3">Perfil</h1>
-        <p>No hay una sesión iniciada.</p>
+        {error
+          ? <div className="alert alert-danger">{error}</div>
+          : <p>No hay una sesión iniciada.</p>}
         <Link to="/login" className="btn btn-primary">Iniciar sesión</Link>
       </div>
     )
   }
 
-  const guardar = (cambios) => {
-    actualizarUsuario(usuario.run, cambios)
-    const actualizado = { ...usuario, ...cambios }
-    guardarSesion(actualizado)
+  const guardar = async (cambios) => {
+    const actualizado = await actualizarUsuarioApi(usuario.id, cambios)
+    actualizarSesion(actualizado)
     setUsuario(actualizado)
     setEditando(false)
     setGuardado(true)
@@ -36,7 +48,7 @@ export default function AdminPerfil() {
   const datos = [
     ['RUN', usuario.run],
     ['Correo', usuario.correo],
-    ['Fecha de nacimiento', usuario.fechaNacimiento || '—'],
+    ['Fecha de nacimiento', usuario.fechaNacimiento],
     ['Tipo', usuario.tipo],
     ['Región', usuario.region],
     ['Comuna', usuario.comuna],
@@ -71,7 +83,7 @@ export default function AdminPerfil() {
                 {datos.map(([etiqueta, valor]) => (
                   <Fragment key={etiqueta}>
                     <dt className="col-sm-4">{etiqueta}</dt>
-                    <dd className="col-sm-8">{valor}</dd>
+                    <dd className="col-sm-8">{valor || '—'}</dd>
                   </Fragment>
                 ))}
               </dl>
